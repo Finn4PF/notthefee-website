@@ -295,13 +295,21 @@ class Calendar {
     constructor() {
         this.currentDate = new Date();
         this.events = [];
+        this.holidays = {
+            "2024-02-14": { name: "Valentine's Day", type: "holiday" },
+            "2024-02-19": { name: "Presidents Day", type: "holiday" },
+            "2024-03-17": { name: "St. Patrick's Day", type: "holiday" },
+            "2024-05-27": { name: "Memorial Day", type: "holiday" },
+            "2024-07-04": { name: "Independence Day", type: "holiday" },
+            "2024-12-25": { name: "Christmas", type: "holiday" }
+        };
         this.initializeCalendar();
-        this.loadEvents();
     }
 
     initializeCalendar() {
         this.updateMonthDisplay();
         this.renderCalendar();
+        this.loadEvents();
     }
 
     updateMonthDisplay() {
@@ -311,13 +319,63 @@ class Calendar {
             `${monthNames[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
     }
 
-    async loadEvents() {
-        // Load next 3 upcoming events
-        const upcomingEvents = [
-            { date: '2024-02-14', title: 'Valentine\'s Day', type: 'holiday' },
-            { date: '2024-02-19', title: 'Presidents Day', type: 'holiday' },
-            { date: '2024-03-17', title: 'St. Patrick\'s Day', type: 'holiday' }
-        ];
+    renderCalendar() {
+        const grid = document.querySelector('.calendar-grid');
+        grid.innerHTML = '';
+
+        // Add day headers
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        days.forEach(day => {
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'calendar-day header';
+            dayHeader.textContent = day;
+            grid.appendChild(dayHeader);
+        });
+
+        // Get first day of month and total days
+        const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
+        const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
+
+        // Add empty cells for days before start of month
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'calendar-day empty';
+            grid.appendChild(emptyDay);
+        }
+
+        // Add days of month
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const dayCell = document.createElement('div');
+            dayCell.className = 'calendar-day';
+            
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = day;
+            dayCell.appendChild(dayNumber);
+
+            // Check for holidays
+            const dateStr = `${this.currentDate.getFullYear()}-${String(this.currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            if (this.holidays[dateStr]) {
+                const holiday = this.holidays[dateStr];
+                const holidayDiv = document.createElement('div');
+                holidayDiv.className = 'holiday-name';
+                holidayDiv.textContent = holiday.name;
+                dayCell.appendChild(holidayDiv);
+            }
+
+            grid.appendChild(dayCell);
+        }
+    }
+
+    loadEvents() {
+        const upcomingEvents = Object.entries(this.holidays)
+            .map(([date, holiday]) => ({
+                date,
+                title: holiday.name,
+                type: holiday.type
+            }))
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .slice(0, 3);
 
         this.events = upcomingEvents;
         this.renderUpcomingEvents();
@@ -344,10 +402,6 @@ class Calendar {
         this.currentDate.setMonth(this.currentDate.getMonth() + 1);
         this.updateMonthDisplay();
         this.renderCalendar();
-    }
-
-    renderCalendar() {
-        // Add calendar grid rendering logic here
     }
 }
 
