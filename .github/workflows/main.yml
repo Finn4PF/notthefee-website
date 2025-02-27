@@ -6,33 +6,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Create config file
-        run: |
-          echo '{
-            "apiKey": "${{ secrets.FIREBASE_API_KEY }}",
-            "authDomain": "${{ secrets.FIREBASE_AUTH_DOMAIN }}",
-            "projectId": "${{ secrets.FIREBASE_PROJECT_ID }}",
-            "storageBucket": "${{ secrets.FIREBASE_STORAGE_BUCKET }}"
-          }' > config.json
-
-      - name: Build
-        run: npm run build
-
-      - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
