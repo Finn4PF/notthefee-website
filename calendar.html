@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Calendar - NotTheFee</title>
+    <style>
+        :root {
+            --primary: #ff7e00;
+            --secondary: #83c341;
+            --background: #000;
+            --text: #f5f5f7;
+            
+            /* Holiday Colors */
+            --valentine: linear-gradient(45deg, #FF69B4, #FF0000);
+            --easter: linear-gradient(45deg, #FFB3BA, #BAFFC9, #BAE1FF);
+            --july4th: linear-gradient(45deg, #FF0000, #FFFFFF, #0000FF);
+            --halloween: linear-gradient(45deg, #FF7E00, #000000);
+            --thanksgiving: linear-gradient(45deg, #8B4513, #FF7E00);
+            --christmas: linear-gradient(45deg, #FF0000, #00FF00);
+            --hanukkah: linear-gradient(45deg, #0000FF, #FFFFFF);
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .calendar-container {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .month-view {
+            flex: 2;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .events-sidebar {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .submit-event-btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--background);
+            padding: 12px 24px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Calendar Grid Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Event Types */
+        .event-company {
+            background: var(--primary);
+        }
+
+        .event-birthday {
+            background: var(--secondary);
+        }
+
+        /* Add navigation styles */
+        nav {
+            background-color: var(--background);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .get-started {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--background);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .month-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--background);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .calendar-day.header {
+            font-weight: bold;
+            background: none;
+            color: var(--primary);
+        }
+
+        .calendar-day.empty {
+            background: none;
+            cursor: default;
+        }
+
+        .calendar-day.has-events::after {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            margin: 2px auto 0;
+        }
+
+        /* Add to your existing styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--background);
+            border: 1px solid var(--primary);
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .event-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group input, .form-group select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 8px;
+            color: var(--text);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .events-list {
+            margin-top: 15px;
+        }
+
+        .event-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .event-item.event-birthday {
+            border-left-color: var(--secondary);
+        }
+
+        .event-item.event-holiday {
+            border-left-color: var(--holiday-color, #ff4081);
+        }
+
+        .event-date {
+            font-size: 0.9em;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        .event-title {
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        /* Apple-inspired calendar grid */
+        .calendar-grid {
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .calendar-day {
+            min-height: 80px;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .calendar-day:not(.empty):hover {
+            background: rgba(255, 126, 0, 0.1);
+        }
+
+        /* Add these styles to your existing <style> section */
+        .event-categories {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .category {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .category.company {
+            background: var(--primary);
+            color: var(--background);
+        }
+
+        .category.birthday {
+            background: var(--secondary);
+            color: var(--background);
+        }
+
+        .category.holiday {
+            background: linear-gradient(45deg, #ff4081, #7c4dff);
+            color: var(--background);
+        }
+
+        .category:hover {
+            opacity: 0.8;
+        }
+
+        /* Apple-inspired calendar improvements */
+        .calendar-day {
+            position: relative;
+            min-height: 100px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .calendar-day.today {
+            background: rgba(255, 126, 0, 0.1);
+            border: 1px solid var(--primary);
+        }
+
+        .event-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin: 2px;
+            display: inline-block;
+        }
+
+        .event-dot.company { background: var(--primary); }
+        .event-dot.birthday { background: var(--secondary); }
+        .event-dot.holiday { background: #ff4081; }
+
+        /* Add to your existing styles */
+        .holiday-name {
+            font-size: 10px;
+            margin-top: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .calendar-day {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .day-number {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .event-dots {
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+            margin-top: auto;
+        }
+
+        /* Add to your existing styles */
+        .holiday-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin: 8px 0;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .day-events {
+            margin: 16px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .event-description {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .event-time {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Active category styling */
+        .category.active {
+            opacity: 1;
+        }
+
+        .category:not(.active) {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">NotTheFee</a>
+        <div class="nav-links">
+            <a href="/recruiting">Recruiting</a>
+            <a href="/calendar" style="color: var(--primary);">Calendar</a>
+            <a href="/partnerships">Partnerships</a>
+            <a href="/deal-tracking">Deal Tracking</a>
+        </div>
+        <a href="/auth.html" class="get-started">Get Started</a>
+    </nav>
+
+    <div class="calendar-container">
+        <div class="month-view">
+            <div class="month-header">
+                <button class="nav-btn prev-month">←</button>
+                <h2>December 2023</h2>
+                <button class="nav-btn next-month">→</button>
+            </div>
+            <div class="calendar-grid">
+                <!-- Calendar grid will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="events-sidebar">
+            <h3>Upcoming Events</h3>
+            <div class="event-categories">
+                <div class="category company">Company Events</div>
+                <div class="category birthday">Birthdays</div>
+                <div class="category holiday">Holidays</div>
+            </div>
+            <div class="events-list">
+                <!-- Events populated by JavaScript -->
+            </div>
+            <button class="submit-event-btn" onclick="showEventForm()">Add New Event</button>
+        </div>
+    </div>
+
+    <!-- Event Submission Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <h3>Submit New Event</h3>
+            <form class="event-form" onsubmit="submitEvent(event)">
+                <div class="form-group">
+                    <label for="eventTitle">Event Title</label>
+                    <input type="text" id="eventTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventDate">Date</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventType">Event Type</label>
+                    <select id="eventType" required>
+                        <option value="company">Company Event</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="holiday">Holiday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="eventDescription">Description</label>
+                    <textarea id="eventDescription" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="hideEventForm()" class="btn-cancel">Cancel</button>
+                    <button type="submit" class="btn-submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add this after your existing event modal -->
+    <div id="dayDetailsModal" class="modal">
+        <div class="modal-content">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Add before your calendar.js script -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+        // Initialize Firebase from config
+        fetch('/config.json')
+            .then(response => response.json())
+            .then(config => {
+                const app = initializeApp(config);
+                window.db = getFirestore(app);
+            })
+            .catch(error => console.error('Error loading Firebase config:', error));
+    </script>
+
+    <script src="js/calendar.js"></script>
+</body>
+</html> 
