@@ -289,4 +289,69 @@ window.submitEvent = async function(event) {
         console.error('Error saving event:', error);
         alert('Failed to save event. Please try again.');
     }
-}; 
+};
+
+class Calendar {
+    constructor() {
+        this.currentDate = new Date();
+        this.events = [];
+        this.initializeCalendar();
+        this.loadEvents();
+    }
+
+    initializeCalendar() {
+        this.updateMonthDisplay();
+        this.renderCalendar();
+    }
+
+    updateMonthDisplay() {
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        document.getElementById('currentMonth').textContent = 
+            `${monthNames[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
+    }
+
+    async loadEvents() {
+        // Load next 3 upcoming events
+        const upcomingEvents = [
+            { date: '2024-02-14', title: 'Valentine\'s Day', type: 'holiday' },
+            { date: '2024-02-19', title: 'Presidents Day', type: 'holiday' },
+            { date: '2024-03-17', title: 'St. Patrick\'s Day', type: 'holiday' }
+        ];
+
+        this.events = upcomingEvents;
+        this.renderUpcomingEvents();
+    }
+
+    renderUpcomingEvents() {
+        const eventsList = document.getElementById('eventsList');
+        eventsList.innerHTML = this.events
+            .map(event => `
+                <div class="event-item event-${event.type}">
+                    <div class="event-date">${new Date(event.date).toLocaleDateString()}</div>
+                    <div class="event-title">${event.title}</div>
+                </div>
+            `).join('');
+    }
+
+    previousMonth() {
+        this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+        this.updateMonthDisplay();
+        this.renderCalendar();
+    }
+
+    nextMonth() {
+        this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+        this.updateMonthDisplay();
+        this.renderCalendar();
+    }
+
+    renderCalendar() {
+        // Add calendar grid rendering logic here
+    }
+}
+
+// Initialize calendar when the page loads
+window.addEventListener('DOMContentLoaded', () => {
+    window.calendar = new Calendar();
+}); 
