@@ -34,16 +34,12 @@ const calendar = {
 
     async fetchEvents() {
         try {
-            const eventsRef = collection(window.db, 'events');
-            const q = query(eventsRef, orderBy('date'));
-            const querySnapshot = await getDocs(q);
-            
-            this.events = [];
-            querySnapshot.forEach((doc) => {
-                this.events.push({ id: doc.id, ...doc.data() });
-            });
+            const events = JSON.parse(localStorage.getItem('calendar-events') || '[]');
+            this.events = events;
+            this.renderEventsList();
         } catch (error) {
             console.error('Error fetching events:', error);
+            this.events = [];
         }
     },
 
@@ -148,13 +144,13 @@ const calendar = {
 
     setupEventListeners() {
         // Previous month button
-        document.querySelector('.prev-month').addEventListener('click', () => {
+        document.querySelector('.nav-btn').addEventListener('click', () => {
             this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1);
             this.renderCalendar();
         });
 
         // Next month button
-        document.querySelector('.next-month').addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn')[1].addEventListener('click', () => {
             this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1);
             this.renderCalendar();
         });
@@ -216,8 +212,8 @@ const calendar = {
     },
 
     renderEventsList() {
-        const eventsList = document.querySelector('.events-list');
-        eventsList.innerHTML = '';
+        const eventsList = document.getElementById('eventsList');
+        if (!eventsList) return;
 
         let filteredEvents = this.events;
         
@@ -230,26 +226,18 @@ const calendar = {
         const upcomingEvents = filteredEvents
             .filter(event => new Date(event.date) >= new Date())
             .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .slice(0, 10); // Show next 10 events
+            .slice(0, 10);
 
-        if (upcomingEvents.length === 0) {
-            eventsList.innerHTML = '<p>No upcoming events</p>';
-            return;
-        }
-
-        upcomingEvents.forEach(event => {
-            const eventEl = document.createElement('div');
-            eventEl.className = `event-item event-${event.type}`;
-            const eventDate = new Date(event.date);
-            eventEl.innerHTML = `
-                <div class="event-date">
-                    ${eventDate.toLocaleDateString('default', { weekday: 'short', month: 'short', day: 'numeric' })}
+        eventsList.innerHTML = upcomingEvents.length ? upcomingEvents
+            .map(event => `
+                <div class="event-item event-${event.type}">
+                    <div class="event-date">
+                        ${new Date(event.date).toLocaleDateString('default', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </div>
+                    <div class="event-title">${event.title}</div>
+                    ${event.description ? `<div class="event-description">${event.description}</div>` : ''}
                 </div>
-                <div class="event-title">${event.title}</div>
-                ${event.description ? `<div class="event-description">${event.description}</div>` : ''}
-            `;
-            eventsList.appendChild(eventEl);
-        });
+            `).join('') : '<p>No upcoming events</p>';
     },
 
     getHolidayForDate(date) {
@@ -261,7 +249,7 @@ const calendar = {
 // Initialize calendar when page loads
 document.addEventListener('DOMContentLoaded', () => calendar.init());
 
-// Add these functions to your existing calendar object
+// Form handling functions
 window.showEventForm = function() {
     document.getElementById('eventModal').style.display = 'block';
 };
@@ -272,140 +260,31 @@ window.hideEventForm = function() {
 
 window.submitEvent = async function(event) {
     event.preventDefault();
-    const formData = {
-        title: document.getElementById('eventTitle').value,
-        date: document.getElementById('eventDate').value,
-        type: document.getElementById('eventType').value,
-        description: document.getElementById('eventDescription').value
-    };
     
     try {
-        await addDoc(collection(window.db, 'events'), formData);
-        await calendar.fetchEvents();
+        const formData = {
+            id: Date.now(),
+            title: document.getElementById('eventTitle').value,
+            date: document.getElementById('eventDate').value,
+            type: document.getElementById('eventType').value,
+            description: document.getElementById('eventDescription').value,
+            createdAt: new Date().toISOString()
+        };
+        
+        // Store in localStorage
+        const events = JSON.parse(localStorage.getItem('calendar-events') || '[]');
+        events.push(formData);
+        localStorage.setItem('calendar-events', JSON.stringify(events));
+        
+        // Update calendar
+        calendar.events = events;
         calendar.renderCalendar();
         calendar.renderEventsList();
         hideEventForm();
+        
+        alert('Event saved successfully!');
     } catch (error) {
         console.error('Error saving event:', error);
         alert('Failed to save event. Please try again.');
     }
-};
-
-class Calendar {
-    constructor() {
-        this.currentDate = new Date();
-        this.events = [];
-        this.holidays = {
-            "2024-02-14": { name: "Valentine's Day", type: "holiday" },
-            "2024-02-19": { name: "Presidents Day", type: "holiday" },
-            "2024-03-17": { name: "St. Patrick's Day", type: "holiday" },
-            "2024-05-27": { name: "Memorial Day", type: "holiday" },
-            "2024-07-04": { name: "Independence Day", type: "holiday" },
-            "2024-12-25": { name: "Christmas", type: "holiday" }
-        };
-        this.initializeCalendar();
-    }
-
-    initializeCalendar() {
-        this.updateMonthDisplay();
-        this.renderCalendar();
-        this.loadEvents();
-    }
-
-    updateMonthDisplay() {
-        const monthNames = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"];
-        document.getElementById('currentMonth').textContent = 
-            `${monthNames[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
-    }
-
-    renderCalendar() {
-        const grid = document.querySelector('.calendar-grid');
-        grid.innerHTML = '';
-
-        // Add day headers
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        days.forEach(day => {
-            const dayHeader = document.createElement('div');
-            dayHeader.className = 'calendar-day header';
-            dayHeader.textContent = day;
-            grid.appendChild(dayHeader);
-        });
-
-        // Get first day of month and total days
-        const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
-        const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
-
-        // Add empty cells for days before start of month
-        for (let i = 0; i < firstDay.getDay(); i++) {
-            const emptyDay = document.createElement('div');
-            emptyDay.className = 'calendar-day empty';
-            grid.appendChild(emptyDay);
-        }
-
-        // Add days of month
-        for (let day = 1; day <= lastDay.getDate(); day++) {
-            const dayCell = document.createElement('div');
-            dayCell.className = 'calendar-day';
-            
-            const dayNumber = document.createElement('div');
-            dayNumber.className = 'day-number';
-            dayNumber.textContent = day;
-            dayCell.appendChild(dayNumber);
-
-            // Check for holidays
-            const dateStr = `${this.currentDate.getFullYear()}-${String(this.currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            if (this.holidays[dateStr]) {
-                const holiday = this.holidays[dateStr];
-                const holidayDiv = document.createElement('div');
-                holidayDiv.className = 'holiday-name';
-                holidayDiv.textContent = holiday.name;
-                dayCell.appendChild(holidayDiv);
-            }
-
-            grid.appendChild(dayCell);
-        }
-    }
-
-    loadEvents() {
-        const upcomingEvents = Object.entries(this.holidays)
-            .map(([date, holiday]) => ({
-                date,
-                title: holiday.name,
-                type: holiday.type
-            }))
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .slice(0, 3);
-
-        this.events = upcomingEvents;
-        this.renderUpcomingEvents();
-    }
-
-    renderUpcomingEvents() {
-        const eventsList = document.getElementById('eventsList');
-        eventsList.innerHTML = this.events
-            .map(event => `
-                <div class="event-item event-${event.type}">
-                    <div class="event-date">${new Date(event.date).toLocaleDateString()}</div>
-                    <div class="event-title">${event.title}</div>
-                </div>
-            `).join('');
-    }
-
-    previousMonth() {
-        this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-        this.updateMonthDisplay();
-        this.renderCalendar();
-    }
-
-    nextMonth() {
-        this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-        this.updateMonthDisplay();
-        this.renderCalendar();
-    }
-}
-
-// Initialize calendar when the page loads
-window.addEventListener('DOMContentLoaded', () => {
-    window.calendar = new Calendar();
-}); 
+}; 

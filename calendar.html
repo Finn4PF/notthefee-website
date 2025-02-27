@@ -405,6 +405,56 @@
         .category:not(.active) {
             opacity: 0.5;
         }
+
+        /* Add to your existing styles */
+        .calendar-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .month-navigation {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .upcoming-events {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .event-item {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .event-item.event-holiday { border-left-color: #ff4081; }
+        .event-item.event-birthday { border-left-color: var(--secondary); }
+        .event-item.event-meeting { border-left-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -420,29 +470,31 @@
     </nav>
 
     <div class="calendar-container">
-        <div class="month-view">
-            <div class="month-header">
-                <button class="nav-btn prev-month">←</button>
-                <h2>December 2023</h2>
-                <button class="nav-btn next-month">→</button>
+        <div class="calendar-header">
+            <div class="month-navigation">
+                <button class="nav-btn" onclick="calendar.previousMonth()">&lt;</button>
+                <h2 id="currentMonth">January 2024</h2>
+                <button class="nav-btn" onclick="calendar.nextMonth()">&gt;</button>
             </div>
-            <div class="calendar-grid">
-                <!-- Calendar grid will be populated by JavaScript -->
+            <div class="event-categories">
+                <span class="category holiday">Holidays</span>
+                <span class="category birthday">Birthdays</span>
+                <span class="category meeting">Meetings</span>
+            </div>
+        </div>
+        
+        <div class="calendar-grid">
+            <!-- Calendar will be populated by JavaScript -->
+        </div>
+
+        <div class="upcoming-events">
+            <h3>Upcoming Events</h3>
+            <div id="eventsList">
+                <!-- Events will be populated by JavaScript -->
             </div>
         </div>
 
-        <div class="events-sidebar">
-            <h3>Upcoming Events</h3>
-            <div class="event-categories">
-                <div class="category company">Company Events</div>
-                <div class="category birthday">Birthdays</div>
-                <div class="category holiday">Holidays</div>
-            </div>
-            <div class="events-list">
-                <!-- Events populated by JavaScript -->
-            </div>
-            <button class="submit-event-btn" onclick="showEventForm()">Add New Event</button>
-        </div>
+        <button onclick="showEventForm()" class="submit-event-btn">Add New Event</button>
     </div>
 
     <!-- Event Submission Modal -->
@@ -485,20 +537,25 @@
         </div>
     </div>
 
-    <!-- Add before your calendar.js script -->
+    <!-- Replace the Firebase config section with this -->
     <script type="module">
         // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firestore.js";
 
-        // Initialize Firebase from config
-        fetch('/config.json')
-            .then(response => response.json())
-            .then(config => {
-                const app = initializeApp(config);
-                window.db = getFirestore(app);
-            })
-            .catch(error => console.error('Error loading Firebase config:', error));
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRbWZBDSkyAoR-MQqb-fNS5BDlbgKFwtE",
+            authDomain: "notthefee.firebaseapp.com",
+            projectId: "notthefee",
+            storageBucket: "notthefee.appspot.com",
+            messagingSenderId: "1051722546827",
+            appId: "1:1051722546827:web:7c8c8c8c8c8c8c8c8c8c8c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
     </script>
 
     <script src="js/calendar.js"></script>
