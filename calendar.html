@@ -56,11 +56,24 @@
             gap: 5px;
         }
 
+        .calendar-day.header {
+            aspect-ratio: auto;
+            padding: 8px 5px;
+            background: var(--primary);
+            color: var(--background);
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
         .calendar-day {
             aspect-ratio: 1;
             padding: 5px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 5px;
+            min-height: 80px;
         }
 
         .event {
