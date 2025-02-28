@@ -2,58 +2,51 @@
 const calendar = {
     currentDate: new Date(2025, 0, 1),
     events: {
-        "2025-01-01": [
-            { title: "New Year's Day", type: "holiday" },
-        ],
-        "2025-01-20": [
-            { title: "MLK Day", type: "holiday" },
-            { title: "Team Meeting", type: "meeting" }
-        ],
-        // More 2025 events
+        "2025-01-01": [{ title: "New Year's Day", type: "holiday" }],
+        "2025-01-20": [{ title: "MLK Day", type: "holiday" }],
+        "2025-02-14": [{ title: "Valentine's Day", type: "holiday" }],
+        "2025-07-04": [{ title: "Fourth of July", type: "holiday", description: "OFFICE CLOSED" }],
+        "2025-12-25": [{ title: "Christmas", type: "holiday" }]
     },
 
     init() {
         this.renderCalendar();
         this.renderUpcomingEvents();
         this.setupEventListeners();
+        this.updateMonthDisplay();
     },
 
     setupEventListeners() {
-        // Month navigation
-        document.querySelector('.prev-month').addEventListener('click', () => {
+        document.querySelector('.prev-month').onclick = () => {
             this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-            this.renderCalendar();
             this.updateMonthDisplay();
-        });
+            this.renderCalendar();
+        };
 
-        document.querySelector('.next-month').addEventListener('click', () => {
+        document.querySelector('.next-month').onclick = () => {
             this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-            this.renderCalendar();
             this.updateMonthDisplay();
-        });
+            this.renderCalendar();
+        };
     },
 
     updateMonthDisplay() {
-        const monthYear = document.getElementById('currentMonth');
-        monthYear.textContent = this.currentDate.toLocaleString('default', { 
-            month: 'long',
-            year: 'numeric'
-        });
+        document.getElementById('currentMonth').textContent = 
+            this.currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
     },
 
     renderCalendar() {
         const grid = document.querySelector('.calendar-grid');
         grid.innerHTML = '';
 
-        // Add day headers
+        // Add weekday headers
         ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
             const header = document.createElement('div');
-            header.className = 'header';
+            header.className = 'calendar-day header';
             header.textContent = day;
             grid.appendChild(header);
         });
 
-        // Get first day of month and number of days
         const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
         const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
 
@@ -67,14 +60,12 @@ const calendar = {
             const cell = document.createElement('div');
             cell.className = 'calendar-day';
             
-            // Add day number
-            const dayNumber = document.createElement('div');
-            dayNumber.className = 'day-number';
-            dayNumber.textContent = day;
-            cell.appendChild(dayNumber);
+            const dayNum = document.createElement('div');
+            dayNum.textContent = day;
+            cell.appendChild(dayNum);
 
-            // Add events for this day
             const date = `${this.currentDate.getFullYear()}-${String(this.currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
             if (this.events[date]) {
                 this.events[date].forEach(event => {
                     const eventDiv = document.createElement('div');
@@ -90,7 +81,21 @@ const calendar = {
 
     renderUpcomingEvents() {
         const list = document.getElementById('eventsList');
-        // Implementation for upcoming events
+        const today = new Date();
+        const upcoming = Object.entries(this.events)
+            .filter(([date]) => new Date(date) >= today)
+            .sort(([a], [b]) => new Date(a) - new Date(b))
+            .slice(0, 5);
+
+        list.innerHTML = upcoming.map(([date, events]) => 
+            events.map(event => `
+                <div class="event ${event.type}">
+                    <div>${new Date(date).toLocaleDateString('default', {month: 'short', day: 'numeric'})}</div>
+                    <div>${event.title}</div>
+                    ${event.description ? `<div>${event.description}</div>` : ''}
+                </div>
+            `).join('')
+        ).join('');
     }
 };
 

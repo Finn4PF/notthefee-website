@@ -3,142 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar - NotTheFee</title>
+    <title>NotTheFee Calendar</title>
     <style>
         :root {
             --primary: #ff7e00;
             --secondary: #83c341;
             --background: #000;
             --text: #f5f5f7;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-hover: rgba(255, 126, 0, 0.1);
         }
 
         body {
+            margin: 0;
+            padding: 0;
             background: var(--background);
             color: var(--text);
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 0;
-            padding: 20px;
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto;
         }
 
         .calendar-container {
-            display: grid;
-            grid-template-columns: 3fr 1fr;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
             padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .calendar-main {
+            flex: 3;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .month-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .month-header button {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            background: var(--glass);
-            padding: 2px;
-            border-radius: 12px;
+            gap: 5px;
         }
 
         .calendar-day {
-            background: rgba(0, 0, 0, 0.3);
             aspect-ratio: 1;
-            padding: 8px;
-            min-height: 80px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .calendar-day:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
         }
 
         .event {
-            font-size: 12px;
-            padding: 4px 8px;
+            font-size: 11px;
+            padding: 2px 4px;
             margin: 2px 0;
-            border-radius: 4px;
+            border-radius: 3px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .event.meeting { background: var(--primary); }
-        .event.holiday { background: var(--secondary); }
-        .event.birthday { background: #5856D6; }
+        .event.holiday { background: var(--primary); }
+        .event.meeting { background: var(--secondary); }
 
         .upcoming-events {
-            background: var(--glass);
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
             padding: 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .day-number {
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: var(--text);
-        }
-
-        .header {
-            text-align: center;
-            padding: 10px;
-            font-weight: 500;
-            color: var(--primary);
-        }
-
-        nav {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .month-nav {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .nav-btn {
-            background: var(--primary);
-            border: none;
-            color: var(--background);
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .nav-btn:hover {
-            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
     <div class="calendar-container">
         <div class="calendar-main">
-            <nav>
-                <div class="month-nav">
-                    <button class="nav-btn prev-month">&lt;</button>
-                    <h2 id="currentMonth">January 2024</h2>
-                    <button class="nav-btn next-month">&gt;</button>
-                </div>
-            </nav>
-            <div class="calendar-grid">
-                <!-- Will be populated by JS -->
+            <div class="month-header">
+                <button class="prev-month">&lt;</button>
+                <h2 id="currentMonth">January 2025</h2>
+                <button class="next-month">&gt;</button>
             </div>
+            <div class="calendar-grid"></div>
         </div>
         <div class="upcoming-events">
             <h3>Upcoming Events</h3>
-            <div id="eventsList">
-                <!-- Will be populated by JS -->
-            </div>
+            <div id="eventsList"></div>
         </div>
     </div>
     <script src="js/calendar.js"></script>
