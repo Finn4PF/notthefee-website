@@ -1,20 +1,44 @@
 // Create the js folder and this file
 const calendar = {
-    currentDate: new Date(),
+    currentDate: new Date(2025, 0, 1),
     events: {
-        "2024-01-01": [
+        "2025-01-01": [
             { title: "New Year's Day", type: "holiday" },
         ],
-        "2024-01-15": [
+        "2025-01-20": [
             { title: "MLK Day", type: "holiday" },
             { title: "Team Meeting", type: "meeting" }
         ],
-        // Add more events here
+        // More 2025 events
     },
 
     init() {
         this.renderCalendar();
         this.renderUpcomingEvents();
+        this.setupEventListeners();
+    },
+
+    setupEventListeners() {
+        // Month navigation
+        document.querySelector('.prev-month').addEventListener('click', () => {
+            this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+            this.renderCalendar();
+            this.updateMonthDisplay();
+        });
+
+        document.querySelector('.next-month').addEventListener('click', () => {
+            this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+            this.renderCalendar();
+            this.updateMonthDisplay();
+        });
+    },
+
+    updateMonthDisplay() {
+        const monthYear = document.getElementById('currentMonth');
+        monthYear.textContent = this.currentDate.toLocaleString('default', { 
+            month: 'long',
+            year: 'numeric'
+        });
     },
 
     renderCalendar() {
