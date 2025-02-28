@@ -58,10 +58,10 @@
 
         .calendar-day.header {
             aspect-ratio: auto;
-            padding: 8px 5px;
-            background: var(--primary);
-            color: var(--background);
-            font-weight: 600;
+            padding: 5px;
+            background: var(--secondary);
+            color: white;
+            font-weight: 700;
             font-size: 14px;
             text-align: center;
             border-radius: 5px;
@@ -73,7 +73,7 @@
             padding: 5px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 5px;
-            min-height: 80px;
+            min-height: 68px;
         }
 
         .event {
@@ -154,6 +154,21 @@
             background: var(--primary);
             color: white;
         }
+
+        .calendar-actions {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .submit-event-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -163,6 +178,11 @@
                 <button class="prev-month">&lt;</button>
                 <h2 id="currentMonth">January 2025</h2>
                 <button class="next-month">&gt;</button>
+            </div>
+            <div class="calendar-actions">
+                <button onclick="calendar.showSubmissionModal()" class="submit-event-btn">
+                    Submit New Event
+                </button>
             </div>
             <div class="calendar-grid"></div>
         </div>
