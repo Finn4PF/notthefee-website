@@ -1,3 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotTheFee - Staff Login</title>
+    <script src="js/navigation.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js"></script>
     <style>
         body {
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -66,6 +75,8 @@
             z-index: -1;
         }
     </style>
+</head>
+<body>
     <div class="bg-gradient"></div>
     
     <div class="auth-container">
@@ -73,53 +84,50 @@
         <h2>Staff Access Only</h2>
         <button class="login-button" onclick="loginWithGoogle()">Sign in with Google</button>
     </div>
-        // Fetch Firebase configuration from config.json
-        fetch('/config.json')
-            .then(response => response.json())
-            .then(config => {
-                const firebaseConfig = {
-                    apiKey: config.FIREBASE_API_KEY,
-                    authDomain: config.FIREBASE_AUTH_DOMAIN,
-                    projectId: config.FIREBASE_PROJECT_ID,
-                    storageBucket: config.FIREBASE_STORAGE_BUCKET
-                };
 
-                // Initialize Firebase
-                const app = initializeApp(firebaseConfig);
-                const analytics = getAnalytics(app);
-                const auth = getAuth(app);
-                const provider = new GoogleAuthProvider();
-                // Define login function and attach it to window
-                window.loginWithGoogle = function() {
-                    signInWithPopup(auth, provider)
-                        .then((result) => {
-                            const user = result.user;
-                            const email = user.email;
-                            
-                            // Check if the user has a 4pillarfunding.com email
-                            if (!email || !email.endsWith('@4pillarfunding.com')) {
-                                // Sign out unauthorized users
-                                auth.signOut();
-                                alert("Access restricted to 4Pillar Funding staff only. Please use your company email address.");
-                                return;
-                            }
-                            
-                            console.log("User logged in:", user.displayName);
-                            alert(`Welcome, ${user.displayName}!`);
-                            
-                            // Redirect to main page after successful login
-                            window.location.href = "index.html";
-                        })
-                        .catch((error) => {
-                            console.error("Error during login:", error);
-                            alert("Login failed: " + error.message);
-                        });
-                };
-            })
-            .catch(error => {
-                console.error("Error loading Firebase config:", error);
-                alert("Failed to load configuration. Please try again later.");
-            });
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRtyVc175Qk-JycQjLzr9s1tVyrEvFxMQ",
+            authDomain: "notthefee.firebaseapp.com",
+            projectId: "notthefee",
+            storageBucket: "notthefee.appspot.com",
+            messagingSenderId: "828660390344",
+            appId: "1:828660390344:web:6496980ce3cf276ae1b8d5",
+            measurementId: "G-YVC7KMEPZ3"
+        };
 
-    <!-- Add this in the <head> section -->
-    <script src="js/navigation.js" defer></script>
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Define login function
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    const user = result.user;
+                    const email = user.email;
+                    
+                    // Check if the user has a 4pillarfunding.com email
+                    if (!email || !email.endsWith('@4pillarfunding.com')) {
+                        // Sign out unauthorized users
+                        firebase.auth().signOut();
+                        alert("Access restricted to 4Pillar Funding staff only. Please use your company email address.");
+                        return;
+                    }
+                    
+                    console.log("User logged in:", user.displayName);
+                    alert(`Welcome, ${user.displayName}!`);
+                    
+                    // Redirect to main page after successful login
+                    window.location.href = "index.html";
+                })
+                .catch((error) => {
+                    console.error("Error during login:", error);
+                    alert("Login failed: " + error.message);
+                });
+        }
+    </script>
+</body>
+</html>
