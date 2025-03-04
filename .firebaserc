@@ -1,5 +1,17 @@
 {
   "projects": {
     "default": "notthefee"
+  },
+  "targets": {
+    "notthefee": {
+      "hosting": {
+        "notthefee": [
+          "notthefee"
+        ],
+        "notthefee-com": [
+          "notthefee-com"
+        ]
+      }
+    }
   }
 }

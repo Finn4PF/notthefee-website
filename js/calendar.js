@@ -1,176 +1,187 @@
 // Create the js folder and this file
-const calendar = {
-    currentDate: new Date(2025, 0, 1),
-    events: {
-        // January
-        "2025-01-01": [{ title: "New Year's Day", type: "holiday" }],
-        "2025-01-20": [{ title: "Martin Luther King Jr. Day", type: "holiday" }],
-        "2025-01-29": [{ title: "Chinese New Year", type: "holiday" }],
+class Calendar {
+    constructor() {
+        this.currentDate = new Date();
+        this.events = [];
+        this.initCalendar();
+        this.loadEvents();
         
-        // February
-        "2025-02-14": [{ title: "Valentine's Day", type: "holiday" }],
-        "2025-02-17": [{ title: "Washington's Birthday", type: "holiday" }],
+        // Set up event listeners
+        document.querySelector('.prev-month').addEventListener('click', () => this.changeMonth(-1));
+        document.querySelector('.next-month').addEventListener('click', () => this.changeMonth(1));
         
-        // March
-        "2025-03-06": [{ title: "Ash Wednesday", type: "holiday" }],
-        "2025-03-17": [{ title: "St. Patrick's Day", type: "holiday" }],
-        "2025-03-20": [{ title: "March Equinox", type: "holiday" }],
-        
-        // April
-        "2025-04-01": [{ title: "April Fool's Day", type: "holiday" }],
-        "2025-04-13": [{ title: "Passover", type: "holiday" }],
-        "2025-04-15": [{ title: "Tax Day", type: "holiday" }],
-        "2025-04-20": [{ title: "Easter Sunday", type: "holiday" }],
-        "2025-04-22": [{ title: "Earth Day", type: "holiday" }],
-        "2025-04-23": [{ title: "Administrative Professionals Day", type: "holiday" }],
-        
-        // May
-        "2025-05-05": [{ title: "Cinco de Mayo", type: "holiday" }],
-        "2025-05-11": [{ title: "Mother's Day", type: "holiday" }],
-        "2025-05-26": [{ title: "Memorial Day", type: "holiday", description: "OFFICE CLOSED" }],
-        
-        // June
-        "2025-06-15": [{ title: "Father's Day", type: "holiday" }],
-        "2025-06-19": [{ title: "Juneteenth", type: "holiday" }],
-        "2025-06-21": [{ title: "June Solstice", type: "holiday" }],
-        
-        // July
-        "2025-07-04": [{ title: "Independence Day", type: "holiday", description: "OFFICE CLOSED" }],
-        
-        // September
-        "2025-09-01": [{ title: "Labor Day", type: "holiday", description: "OFFICE CLOSED" }],
-        "2025-09-23": [{ title: "September Equinox", type: "holiday" }],
-        
-        // October
-        "2025-10-13": [{ title: "Columbus Day", type: "holiday" }],
-        "2025-10-31": [{ title: "Halloween", type: "holiday" }],
-        
-        // November
-        "2025-11-11": [{ title: "Veterans Day", type: "holiday" }],
-        "2025-11-27": [{ title: "Thanksgiving Day", type: "holiday", description: "OFFICE CLOSED" }],
-        "2025-11-28": [{ title: "Day After Thanksgiving", type: "holiday", description: "OFFICE CLOSED" }],
-        
-        // December
-        "2025-12-24": [{ title: "Christmas Eve", type: "holiday", description: "OFFICE CLOSED" }],
-        "2025-12-25": [{ title: "Christmas Day", type: "holiday", description: "OFFICE CLOSED" }],
-        "2025-12-26": [{ title: "Kwanzaa Begins", type: "holiday" }],
-        "2025-12-31": [{ title: "New Year's Eve", type: "holiday", description: "OFFICE CLOSED" }]
-    },
-
-    init() {
+        // Event submission form
+        document.getElementById('eventSubmissionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.submitEvent();
+        });
+    }
+    
+    initCalendar() {
         this.renderCalendar();
-        this.renderUpcomingEvents();
-        this.setupEventListeners();
         this.updateMonthDisplay();
-    },
-
-    setupEventListeners() {
-        document.querySelector('.prev-month').onclick = () => {
-            this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-            this.updateMonthDisplay();
-            this.renderCalendar();
-        };
-
-        document.querySelector('.next-month').onclick = () => {
-            this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-            this.updateMonthDisplay();
-            this.renderCalendar();
-        };
-    },
-
-    updateMonthDisplay() {
-        document.getElementById('currentMonth').textContent = 
-            this.currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-    },
-
+    }
+    
     renderCalendar() {
         const grid = document.querySelector('.calendar-grid');
         grid.innerHTML = '';
-
-        // Add weekday headers
-        ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
-            const header = document.createElement('div');
-            header.className = 'calendar-day header';
-            header.textContent = day;
-            grid.appendChild(header);
+        
+        // Add day headers
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        days.forEach(day => {
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'calendar-day header';
+            dayHeader.textContent = day;
+            grid.appendChild(dayHeader);
         });
-
-        const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
-        const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
-
-        // Add empty cells for days before start of month
-        for (let i = 0; i < firstDay.getDay(); i++) {
-            grid.appendChild(document.createElement('div'));
+        
+        // Get first day of month and total days
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+        
+        // Add empty cells for days before first of month
+        for (let i = 0; i < firstDay; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'calendar-day empty';
+            grid.appendChild(emptyDay);
         }
-
-        // Add days
-        for (let day = 1; day <= lastDay.getDate(); day++) {
-            const cell = document.createElement('div');
-            cell.className = 'calendar-day';
+        
+        // Add days of the month
+        for (let i = 1; i <= lastDate; i++) {
+            const dayCell = document.createElement('div');
+            dayCell.className = 'calendar-day';
             
-            const dayNum = document.createElement('div');
-            dayNum.textContent = day;
-            cell.appendChild(dayNum);
-
-            const date = `${this.currentDate.getFullYear()}-${String(this.currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dateNum = document.createElement('div');
+            dateNum.textContent = i;
+            dayCell.appendChild(dateNum);
             
-            if (this.events[date]) {
-                this.events[date].forEach(event => {
-                    const eventDiv = document.createElement('div');
-                    eventDiv.className = `event ${event.type}`;
-                    eventDiv.textContent = event.title;
-                    cell.appendChild(eventDiv);
-                });
+            // Check for events on this day
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            const dayEvents = this.events.filter(event => event.date === dateStr);
+            
+            dayEvents.forEach(event => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = `event ${event.type}`;
+                eventDiv.textContent = event.title;
+                eventDiv.title = event.description || event.title;
+                dayCell.appendChild(eventDiv);
+            });
+            
+            grid.appendChild(dayCell);
+        }
+    }
+    
+    updateMonthDisplay() {
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthYear = `${monthNames[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
+        document.getElementById('currentMonth').textContent = monthYear;
+    }
+    
+    changeMonth(delta) {
+        this.currentDate.setMonth(this.currentDate.getMonth() + delta);
+        this.updateMonthDisplay();
+        this.renderCalendar();
+    }
+    
+    loadEvents() {
+        // Sample events - in a real app, you'd fetch these from Firebase
+        this.events = [
+            {
+                title: 'Company Holiday',
+                date: '2025-03-17',
+                type: 'holiday',
+                description: 'St. Patrick\'s Day'
+            },
+            {
+                title: 'Team Meeting',
+                date: '2025-03-05',
+                type: 'meeting',
+                description: 'Quarterly planning session'
+            },
+            {
+                title: 'John\'s Birthday',
+                date: '2025-03-12',
+                type: 'birthday',
+                description: 'Office celebration at 3pm'
             }
-
-            grid.appendChild(cell);
-        }
-    },
-
+        ];
+        
+        this.renderCalendar();
+        this.renderUpcomingEvents();
+    }
+    
     renderUpcomingEvents() {
-        const list = document.getElementById('eventsList');
+        const eventsList = document.getElementById('eventsList');
+        eventsList.innerHTML = '';
+        
+        // Sort events by date
+        const sortedEvents = [...this.events].sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // Filter for upcoming events (today and future)
         const today = new Date();
-        const upcoming = Object.entries(this.events)
-            .filter(([date]) => new Date(date) >= today)
-            .sort(([a], [b]) => new Date(a) - new Date(b))
-            .slice(0, 5);
-
-        list.innerHTML = upcoming.map(([date, events]) => 
-            events.map(event => `
-                <div class="event ${event.type}">
-                    <div>${new Date(date).toLocaleDateString('default', {month: 'short', day: 'numeric'})}</div>
-                    <div>${event.title}</div>
-                    ${event.description ? `<div>${event.description}</div>` : ''}
-                </div>
-            `).join('')
-        ).join('');
-    },
-
+        today.setHours(0, 0, 0, 0);
+        
+        const upcomingEvents = sortedEvents.filter(event => {
+            const eventDate = new Date(event.date);
+            return eventDate >= today;
+        }).slice(0, 5); // Show only next 5 events
+        
+        if (upcomingEvents.length === 0) {
+            eventsList.innerHTML = '<p>No upcoming events</p>';
+            return;
+        }
+        
+        upcomingEvents.forEach(event => {
+            const eventItem = document.createElement('div');
+            eventItem.className = 'upcoming-event';
+            
+            const eventDate = new Date(event.date);
+            const formattedDate = eventDate.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            eventItem.innerHTML = `
+                <div class="event-date">${formattedDate}</div>
+                <div class="event-title ${event.type}">${event.title}</div>
+                <div class="event-description">${event.description || ''}</div>
+            `;
+            
+            eventsList.appendChild(eventItem);
+        });
+    }
+    
     showSubmissionModal() {
         document.getElementById('eventSubmissionModal').style.display = 'block';
-    },
-
+    }
+    
+    submitEvent() {
+        const title = document.getElementById('submissionTitle').value;
+        const date = document.getElementById('submissionDate').value;
+        const type = document.getElementById('submissionType').value;
+        const description = document.getElementById('submissionDescription').value;
+        
+        // In a real app, you'd send this to Firebase
+        alert(`Event submission received!\n\nTitle: ${title}\nDate: ${date}\nType: ${type}\n\nThank you! Your event will be reviewed by an administrator.`);
+        
+        // Close modal and reset form
+        this.closeSubmissionModal();
+    }
+    
     closeSubmissionModal() {
         document.getElementById('eventSubmissionModal').style.display = 'none';
-    },
-
-    handleSubmission(event) {
-        event.preventDefault();
-        const formData = {
-            title: document.getElementById('submissionTitle').value,
-            date: document.getElementById('submissionDate').value,
-            type: document.getElementById('submissionType').value,
-            description: document.getElementById('submissionDescription').value
-        };
-        
-        // Store in localStorage for your review
-        const submissions = JSON.parse(localStorage.getItem('event-submissions') || '[]');
-        submissions.push(formData);
-        localStorage.setItem('event-submissions', JSON.stringify(submissions));
-        
-        this.closeSubmissionModal();
-        alert('Event submitted for approval!');
+        document.getElementById('eventSubmissionForm').reset();
     }
-};
+}
 
-document.addEventListener('DOMContentLoaded', () => calendar.init()); 
+// Initialize calendar when page loads
+window.addEventListener('DOMContentLoaded', () => {
+    window.calendar = new Calendar();
+    
+    // Make closeSubmissionModal available globally
+    window.closeSubmissionModal = () => window.calendar.closeSubmissionModal();
+}); 

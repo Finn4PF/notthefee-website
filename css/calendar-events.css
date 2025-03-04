@@ -1,0 +1,48 @@
+.upcoming-event {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: transform 0.2s;
+}
+
+.upcoming-event:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.event-date {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 5px;
+}
+
+.event-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.event-title.holiday {
+    background: var(--primary);
+}
+
+.event-title.meeting {
+    background: var(--secondary);
+}
+
+.event-title.birthday {
+    background: #9c27b0;
+}
+
+.event-description {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.no-events {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
